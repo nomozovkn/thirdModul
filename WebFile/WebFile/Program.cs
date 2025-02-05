@@ -1,5 +1,5 @@
 
-namespace WebFileManagement.Server
+namespace WebFile
 {
     public class Program
     {

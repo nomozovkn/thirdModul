@@ -2,6 +2,8 @@
 using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 using System.Collections.Generic;
 using System.IO;
+using MovieCRUD.Service.Services;
+using MovieCRUD.Repository.Services;
 
 namespace MovieCRUD
 {
@@ -17,7 +19,8 @@ namespace MovieCRUD
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
+            builder.Services.AddScoped<IMovieService, MovieService>();
+            builder.Services.AddScoped<IMovieRepository, MovieRepository>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -30,7 +33,6 @@ namespace MovieCRUD
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 

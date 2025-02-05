@@ -1,4 +1,4 @@
-﻿using MovieCRUD.DataAccess.Entity;
+using MovieCRUD.DataAccess.Entity;
 using MovieCRUD.Repository.Services;
 using MovieCRUD.Service.MovieDTO;
 
@@ -7,16 +7,18 @@ namespace MovieCRUD.Service.Services;
 public class MovieService : IMovieService
 {
     private readonly IMovieRepository _movieRepository;
-    public MovieService()
+
+    public MovieService(IMovieRepository movieRepository)
     {
-        _movieRepository = new MovieRepository();
+        _movieRepository = movieRepository;
     }
+
     public async Task<Guid> AddMovieAsync(MovieDto movieDto)
     {
-        var movie = await ConverToEntityAsync(movieDto);
+        var movie = ConvertToEntity(movieDto);
         var res = await _movieRepository.AddMovieAsync(movie);
         return res;
-    }   
+    }
 
     public async Task DeleteMovieAsync(Guid id)
     {
@@ -34,90 +36,84 @@ public class MovieService : IMovieService
     {
         var res = await _movieRepository.GetAllMoviesAsync();
         var list = res.Where(movie => movie.Director == director).ToList();
-        var resList = await Task.WhenAll(list.Select(async mo => await ConvertToDtoAsync(mo)).ToList());
+        var resList = await Task.WhenAll(list.Select(mo => ConvertToDtoAsync(mo)).ToList());
         return resList.ToList();
-
     }
 
-    public async Task<MovieDto> GetHighestGrossingMovieAsync() // eng ko'p daromad qlgan film
+    public async Task<MovieDto> GetHighestGrossingMovieAsync()
     {
         var movieList = await _movieRepository.GetAllMoviesAsync();
-        var movieDto = await Task.WhenAll(movieList.Select(async mo => await ConvertToDtoAsync(mo)).ToList());
+        var movieDto = await Task.WhenAll(movieList.Select(mo => ConvertToDtoAsync(mo)).ToList());
         var max = movieDto.Max(mo => mo.BoxOfficeEarnings);
         var res = movieDto.FirstOrDefault(mo => mo.BoxOfficeEarnings == max);
         return res;
     }
 
-   
-
-    public async Task<List<MovieDto>> GetMoviesReleasedAfterYearAsync(int year) // yildan keyin ciqqan film
+    public async Task<List<MovieDto>> GetMoviesReleasedAfterYearAsync(int year)
     {
         var movies = await _movieRepository.GetAllMoviesAsync();
         var list = movies.Where(movie => movie.ReleaseDate.Year > year).ToList();
-        var resList = await Task.WhenAll(list.Select(async mo => await ConvertToDtoAsync(mo)).ToList());
+        var resList = await Task.WhenAll(list.Select(mo => ConvertToDtoAsync(mo)).ToList());
         return resList.ToList();
     }
 
-    public async Task<List<MovieDto>> GetMoviesSortedByRatingAsync() //Reyting bn sortlash kattadan kicikka
+    public async Task<List<MovieDto>> GetMoviesSortedByRatingAsync()
     {
         var movies = await _movieRepository.GetAllMoviesAsync();
-        var moviesDto = await Task.WhenAll(movies.Select(async mo => await ConvertToDtoAsync(mo)).ToList());
+        var moviesDto = await Task.WhenAll(movies.Select(mo => ConvertToDtoAsync(mo)).ToList());
         var sortedMovies = moviesDto.OrderByDescending(mo => mo.Rating).ToList();
         return sortedMovies;
     }
 
-    public async Task<List<MovieDto>> GetMoviesWithinDurationRangeAsync(int minMinutes, int maxMinutes) // davomiyligi min va max orasida
+    public async Task<List<MovieDto>> GetMoviesWithinDurationRangeAsync(int minMinutes, int maxMinutes)
     {
         var movies = await _movieRepository.GetAllMoviesAsync();
         var filtrDurationMinutes = movies.Where(movie => movie.DurationMinutes >= minMinutes && movie.DurationMinutes <= maxMinutes).ToList();
-        var movieDto = await Task.WhenAll(filtrDurationMinutes.Select(async mo => await ConvertToDtoAsync(mo)).ToList());
-        return movieDto.ToList(); ;
+        var movieDto = await Task.WhenAll(filtrDurationMinutes.Select(mo => ConvertToDtoAsync(mo)).ToList());
+        return movieDto.ToList();
     }
 
-    public async Task<List<MovieDto>> GetRecentMoviesAsync(int years) // so'ngi yil icida chiqarilgan film
+    public async Task<List<MovieDto>> GetRecentMoviesAsync(int years)
     {
         var movies = await _movieRepository.GetAllMoviesAsync();
-        var lastYearFilms = movies.Where(movie => movie.ReleaseDate.Year == years).ToList();
-        var movieDto = await Task.WhenAll(lastYearFilms.Select(async mo => await ConvertToDtoAsync(mo)).ToList());
-        return movieDto.ToList(); ;
+        var lastYearFilms = movies.Where(movie => movie.ReleaseDate >= DateTime.Now.AddYears(-years)).ToList();
+        var movieDto = await Task.WhenAll(lastYearFilms.Select(mo => ConvertToDtoAsync(mo)).ToList());
+        return movieDto.ToList();
     }
 
-    public async Task<MovieDto> GetTopRatedMovieAsync()// reytingi eng balant film 
+    public async Task<MovieDto> GetTopRatedMovieAsync()
     {
         var movies = await _movieRepository.GetAllMoviesAsync();
-        var movieDto = await Task.WhenAll(movies.Select(mo=>ConvertToDtoAsync(mo)).ToList());
+        var movieDto = await Task.WhenAll(movies.Select(mo => ConvertToDtoAsync(mo)).ToList());
         var maxRating = movieDto.Max(max => max.Rating);
-        var res=movieDto.FirstOrDefault(movies => movies.Rating == maxRating);
+        var res = movieDto.FirstOrDefault(movies => movies.Rating == maxRating);
         return res;
-
-
     }
 
-    public async Task<long> GetTotalBoxOfficeEarningsByDirectorAsync(string director)//directorni filmlari qancha daromad qilgani
+    public async Task<long> GetTotalBoxOfficeEarningsByDirectorAsync(string director)
     {
         var res = await _movieRepository.GetAllMoviesAsync();
         var list = res.Where(movie => movie.Director == director).ToList();
-        var resList = await Task.WhenAll(list.Select(async mo => await ConvertToDtoAsync(mo)).ToList());
+        var resList = await Task.WhenAll(list.Select(mo => ConvertToDtoAsync(mo)).ToList());
         var total = resList.Sum(mo => mo.BoxOfficeEarnings);
         return total;
     }
 
-    public async Task<List<MovieDto>> SearchMoviesByTitleAsync(string keyword)// title da keyword qatnashgan film qaytarilsin
+    public async Task<List<MovieDto>> SearchMoviesByTitleAsync(string keyword)
     {
         var movies = await _movieRepository.GetAllMoviesAsync();
         var list = movies.Where(movie => movie.Title.Contains(keyword)).ToList();
-        var resList = await Task.WhenAll(list.Select(async mo => await ConvertToDtoAsync(mo)).ToList());
+        var resList = await Task.WhenAll(list.Select(mo => ConvertToDtoAsync(mo)).ToList());
         return resList.ToList();
     }
 
     public async Task UpdateMovieAsync(MovieDto movieDto)
     {
-        var movie = await ConverToEntityAsync(movieDto);
+        var movie = ConvertToEntity(movieDto);
         await _movieRepository.UpdateMovieAsync(movie);
     }
-   
-    
-    private async Task<Movie> ConverToEntityAsync(MovieDto movieDto)
+
+    private Movie ConvertToEntity(MovieDto movieDto)
     {
         return new Movie()
         {
@@ -128,11 +124,10 @@ public class MovieService : IMovieService
             Rating = movieDto.Rating,
             BoxOfficeEarnings = movieDto.BoxOfficeEarnings,
             ReleaseDate = movieDto.ReleaseDate,
-
         };
     }
 
-    private async Task<MovieDto> ConvertToDtoAsync(Movie movie)
+    private MovieDto ConvertToDtoAsync(Movie movie)
     {
         return new MovieDto()
         {
@@ -143,12 +138,6 @@ public class MovieService : IMovieService
             Rating = movie.Rating,
             BoxOfficeEarnings = movie.BoxOfficeEarnings,
             ReleaseDate = movie.ReleaseDate,
-
         };
     }
-
-
-
-
-
 }

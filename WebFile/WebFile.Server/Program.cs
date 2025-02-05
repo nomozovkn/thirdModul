@@ -1,5 +1,8 @@
 
-namespace WebFileManagement.Server
+using WebFile.Service.Services;
+using WebFile.StorageBrokker.Services;
+
+namespace WebFile.Server
 {
     public class Program
     {
@@ -13,10 +16,13 @@ namespace WebFileManagement.Server
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
+            builder.Services.AddScoped<IStorageService, StorageService>();
+            builder.Services.AddSingleton<IStorageBrokkerService, LocalStorageBrokkerService>();
+            //builder.Services.AddSingleton<IStorageService, StorageService>();
+            //builder.Services.AddTransient<IStorageService, StorageService>();
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            // Configure the HTTP request pipeline.   
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();

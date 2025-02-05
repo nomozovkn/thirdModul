@@ -2,35 +2,36 @@
 using Microsoft.AspNetCore.Mvc;
 using WebFileManagement.Service.Services;
 
-namespace WebFileManagement.Server.Controllers;
-
-[Route("api/[storage")]
-[ApiController]
-public class StorageController : ControllerBase
+namespace WebFileManagement.Server.Controllers
 {
-    private readonly IStorageService _storageService;
-    public StorageController(IStorageService storageService)
+    [Route("api/storage")]
+    [ApiController]
+    public class StorageController : ControllerBase
     {
-        _storageService = storageService;
-    }
-    [HttpPost("uploadFile")]
-    public void UploadFile(IFormFile file, string directoryPath)
-    {
-        directoryPath += file.FileName;
-        using(Stream stream = file.OpenReadStream())
+        private readonly IStorageService _storageService;
+        public StorageController(IStorageService storageService)
         {
-            _storageService.UploadFile(directoryPath, stream);
+            _storageService = storageService;
         }
-    }
-    [HttpPost("createFolder")]
-    public void CreateFolder(string folderPath)
-    {
-        _storageService.CreateDirectory(folderPath);
-    }
-    [HttpGet("getAll")]
-    public List<string> GetAllInFolder(string folderPath)
-    {
-        var all= _storageService.GetAllFilesAndDirectories(folderPath);
-        return all;
+        [HttpPost("uploadFile")]
+        public void UploadFile(IFormFile file, string directoryPath)
+        {
+            directoryPath += file.FileName;
+            using (Stream stream = file.OpenReadStream())
+            {
+                _storageService.UploadFile(directoryPath, stream);
+            }
+        }
+        [HttpPost("createFolder")]
+        public void CreateFolder(string folderPath)
+        {
+            _storageService.CreateDirectory(folderPath);
+        }
+        [HttpGet("getAll")]
+        public List<string> GetAllInFolder(string folderPath)
+        {
+            var all = _storageService.GetAllFilesAndDirectories(folderPath);
+            return all;
+        }
     }
 }

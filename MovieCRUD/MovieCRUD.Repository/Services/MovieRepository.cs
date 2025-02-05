@@ -5,14 +5,21 @@ namespace MovieCRUD.Repository.Services;
 
 public class MovieRepository : IMovieRepository
 {
-    private readonly string  _path;
+    private readonly string _filepath;
+    private readonly string _directoryPath;
     private List<Movie> _movies;
     public MovieRepository()
     {
-        _path = Path.Combine(Directory.GetCurrentDirectory(), "Movies.json");
-        if (!File.Exists(_path))
+        _filepath = Path.Combine(Directory.GetCurrentDirectory(), "Data", "Movies.json");
+        _directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "Data");
+
+        if (!Directory.Exists(_directoryPath))
         {
-            File.WriteAllText(_path, "[]");
+            Directory.CreateDirectory(_directoryPath);
+        }
+        if (!File.Exists(_filepath))
+        {
+            File.WriteAllText(_filepath, "[]");
         }
         _movies = GetAllMoviesAsync().Result;
     }
@@ -33,14 +40,14 @@ public class MovieRepository : IMovieRepository
 
     public async Task<List<Movie>> GetAllMoviesAsync()
     {
-        var movieJson = await File.ReadAllTextAsync(_path);
+        var movieJson = await File.ReadAllTextAsync(_filepath);
         _movies = JsonSerializer.Deserialize<List<Movie>>(movieJson);
         return _movies;
     }
 
     public async Task<Movie> GetMovieByIdAsync(Guid id)
     {
-        var movie =_movies.FirstOrDefault(x => x.Id == id);
+        var movie = _movies.FirstOrDefault(x => x.Id == id);
         if (movie == null)
         {
             throw new Exception($" Movie with id:{id} not found");
@@ -58,6 +65,6 @@ public class MovieRepository : IMovieRepository
     private async Task SaveDataAsync()
     {
         var movieJson = JsonSerializer.Serialize(_movies);
-        await File.WriteAllTextAsync(_path, movieJson);
+        await File.WriteAllTextAsync(_filepath, movieJson);
     }
 }

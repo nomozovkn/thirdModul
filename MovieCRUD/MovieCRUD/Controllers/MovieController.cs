@@ -13,10 +13,12 @@ namespace MovieCRUD.Server.Controllers
         {
             _movieService = movieService;
         }
-        [HttpGet("addMovieAsync")]
+        [HttpPost("addMovieAsync")]
         public async Task<Guid> AddMovieAsync(MovieDto movieDto)
         {
-            return await _movieService.AddMovieAsync(movieDto);
+          
+            var resId= await _movieService.AddMovieAsync(movieDto);
+            return resId;
         }
         [HttpDelete("deleteMovieAsync")]
         public async Task DeleteMovieAsync(Guid id)
@@ -73,7 +75,7 @@ namespace MovieCRUD.Server.Controllers
         {
             return await _movieService.GetRecentMoviesAsync(years);
         }
-        [HttpGet("getMovieByIdAsync")]
+        //[HttpGet("getMovieByIdAsync")]
         //public async Task<MovieDto> GetMovieByIdAsync(Guid id)
         //{
         //    return await _movieService.GetMovieByIdAsync(id);

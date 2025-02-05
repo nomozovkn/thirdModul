@@ -4,7 +4,7 @@ namespace MovieCRUD.Service.Services;
 
 public interface IMovieService
 {
-    Task<Guid> AddMovieAsync(MovieDto movieDto);
+    Task<Guid>? AddMovieAsync(MovieDto movieDto);
     Task DeleteMovieAsync(Guid id);
     Task<List<MovieDto>> GetAllMoviesAsync();
     Task<List<MovieDto>> GetAllMoviesByDirectorAsync(string director);
